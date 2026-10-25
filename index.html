@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Suplementos y Lluvias</title>
+<meta name="theme-color" content="#0f3d24">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Ypoti Campo">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;overflow:hidden;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+body{background:#0f3d24}
+#home{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:24px 20px calc(24px + env(safe-area-inset-bottom));
+ background:linear-gradient(160deg,#0f3d24 0%,#16573a 60%,#1f4f86 140%);color:#fff}
+#home img{width:68%;max-width:260px}
+#home .sub{opacity:.8;font-size:14px;margin-top:-8px}
+.big{width:100%;max-width:380px;display:flex;align-items:center;gap:16px;padding:20px 18px;border:0;border-radius:18px;font-size:19px;font-weight:700;color:#0f2a1a;background:#fff;box-shadow:0 6px 18px rgba(0,0,0,.25);cursor:pointer;text-align:left}
+.big span.ic{font-size:34px;width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center}
+.big small{display:block;font-weight:500;font-size:13px;color:#5b6b60;margin-top:2px}
+#bLl .ic{background:#e3eefb}#bSu .ic{background:#e4f2e8}
+.foot{position:absolute;bottom:calc(10px + env(safe-area-inset-bottom));font-size:12px;opacity:.6}
+#bar{position:fixed;left:0;right:0;top:0;height:calc(40px + env(safe-area-inset-top));padding-top:env(safe-area-inset-top);display:none;align-items:center;gap:8px;color:#fff;font-weight:700;font-size:15px;z-index:5}
+#bar button{border:0;background:rgba(255,255,255,.18);color:#fff;font-weight:700;font-size:14px;border-radius:9px;padding:6px 12px;margin-left:8px;cursor:pointer}
+iframe{position:fixed;left:0;right:0;bottom:0;top:calc(40px + env(safe-area-inset-top));width:100%;height:calc(100% - 40px - env(safe-area-inset-top));border:0;background:#f4f6f3;display:none}
+#sp{position:fixed;left:0;right:0;bottom:0;top:calc(40px + env(safe-area-inset-top));display:none;flex-direction:column;align-items:center;justify-content:center;gap:12px;background:#f4f6f3;color:#0f3d24;font-weight:600;z-index:4}
+#sp a{color:#1f4f86;font-size:13px;display:none}
+.spin{width:38px;height:38px;border:4px solid #cfe0d4;border-top-color:#0f3d24;border-radius:50%;animation:r 1s linear infinite}
+@keyframes r{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<div id="home">
+  <img src="logo.png" alt="Ypoti">
+  <div class="sub">Rural Bioenergía S.A. · ¿Qué vas a registrar?</div>
+  <button class="big" id="bLl" onclick="abrir('lluvias')"><span class="ic">🌧️</span><div>Registro de Lluvias<small>Cargar mm por estancia</small></div></button>
+  <button class="big" id="bSu" onclick="abrir('suplementos')"><span class="ic">🌾</span><div>Control de Suplementos<small>Abastecimientos, bolsas y resumen</small></div></button>
+  <div class="foot">Cada registro tiene su propio usuario y contraseña</div>
+</div>
+<div id="bar"><button onclick="inicio()">← Inicio</button><span id="tit"></span></div>
+<iframe id="f-lluvias" allow="clipboard-write; fullscreen"></iframe>
+<iframe id="f-suplementos" allow="clipboard-write; fullscreen"></iframe>
+<div id="sp"><div class="spin"></div><div>Cargando…</div><a id="alt" target="_top">¿No carga? Tocá acá para abrir</a></div>
+<script>
+var APPS={
+  lluvias:{url:'https://script.google.com/macros/s/AKfycbzZ5B99sB1DW7ASnNi7uBr8M50StII_Hwc-bZjRQzMAK4EiC9hNu8B4Gja7W3A0hglk/exec',t:'🌧️ Registro de Lluvias',c:'#1f4f86'},
+  suplementos:{url:'https://script.google.com/macros/s/AKfycbyLd30A0W8c7U0TiE0hnvQTE1POjmXuJxA4VVCzcVH1381s9qfac1TXvsLkf_V7o-a-9A/exec',t:'🌾 Control de Suplementos',c:'#0f3d24'}
+};
+var cargado={},timer;
+function $(i){return document.getElementById(i)}
+function mostrar(app){
+  ['lluvias','suplementos'].forEach(function(k){$('f-'+k).style.display=(k===app?'block':'none')});
+  $('home').style.display=app?'none':'flex';
+  $('bar').style.display=app?'flex':'none';
+  if(!app){$('sp').style.display='none';document.body.style.background='#0f3d24';return}
+  var a=APPS[app];$('tit').textContent=a.t;$('bar').style.background=a.c;document.body.style.background=a.c;
+  document.querySelector('meta[name=theme-color]').setAttribute('content',a.c);
+  var f=$('f-'+app);
+  if(!cargado[app]){
+    cargado[app]=1;$('sp').style.display='flex';$('alt').style.display='none';$('alt').href=a.url;
+    clearTimeout(timer);timer=setTimeout(function(){$('alt').style.display='block'},8000);
+    f.onload=function(){$('sp').style.display='none';clearTimeout(timer)};
+    f.src=a.url;
+  }else $('sp').style.display='none';
+  try{localStorage.setItem('ultima',app)}catch(e){}
+}
+function abrir(app){ if(location.hash!=='#'+app) location.hash=app; else mostrar(app); }
+function inicio(){ if(location.hash) history.back(); else mostrar(null); }
+window.addEventListener('hashchange',function(){ var h=location.hash.slice(1); mostrar(APPS[h]?h:null); });
+var h=location.hash.slice(1); mostrar(APPS[h]?h:null);
+if('serviceWorker' in navigator){ navigator.serviceWorker.register('sw.js').catch(function(){}); }
+</script>
+</body>
+</html>
